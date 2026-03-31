@@ -44,7 +44,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <Router>
+      <Router basename="/psonlinecentre">
         <Routes>
           <Route path="/" element={<Home isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
           <Route path="/login" element={user ? <Navigate to="/admin" /> : <Login />} />

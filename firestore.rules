@@ -1,0 +1,87 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: services
+// Document ID: auto-generated
+// Fields:
+//   - name: string (required) - Name of the service
+//   - price: string (required) - Price of the service
+//   - imageUrl: string (required) - URL of the service image
+//   - category: string (optional) - Category of the service
+//   - description: string (optional) - Detailed description
+//
+// Collection: applications
+// Document ID: auto-generated
+// Fields:
+//   - serviceName: string (required) - Name of the service applied for
+//   - userName: string (required) - Name of the user
+//   - userPhone: string (required) - Phone number of the user
+//   - documentUrl: string (required) - URL of the uploaded document
+//   - status: string (required, enum: ['pending', 'processing', 'completed']) - Status of the application
+//   - createdAt: timestamp (required) - Submission time
+//
+// Collection: admins
+// Document ID: user UID
+// Fields:
+//   - email: string (required) - Admin email
+//   - role: string (required, enum: ['admin']) - User role
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "jayydv107@gmail.com"));
+    }
+
+    function isValidService(data) {
+      return data.keys().hasAll(['name', 'price', 'imageUrl']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.price is string && data.price.size() > 0 && data.price.size() < 50 &&
+             data.imageUrl is string && data.imageUrl.size() > 0 && data.imageUrl.size() < 1000;
+    }
+
+    function isValidApplication(data) {
+      return data.keys().hasAll(['serviceName', 'userName', 'userPhone', 'documentUrl', 'status', 'createdAt']) &&
+             data.serviceName is string && data.serviceName.size() > 0 && data.serviceName.size() < 100 &&
+             data.userName is string && data.userName.size() > 0 && data.userName.size() < 100 &&
+             data.userPhone is string && data.userPhone.size() > 0 && data.userPhone.size() < 20 &&
+             data.documentUrl is string && data.documentUrl.size() > 0 && data.documentUrl.size() < 1000 &&
+             data.status in ['pending', 'processing', 'completed'] &&
+             data.createdAt is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /services/{serviceId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidService(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /applications/{applicationId} {
+      allow create: if isValidApplication(request.resource.data);
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /admins/{adminId} {
+      allow read: if isAuthenticated() && (request.auth.uid == adminId || isAdmin());
+      allow write: if isAdmin();
+    }
+  }
+}

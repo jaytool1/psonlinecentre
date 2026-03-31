@@ -1,0 +1,55 @@
+{
+  "entities": {
+    "Service": {
+      "title": "Service",
+      "description": "A service offered by Pankaj Online Center",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the service" },
+        "price": { "type": "string", "description": "Price of the service" },
+        "imageUrl": { "type": "string", "description": "URL of the service image" },
+        "category": { "type": "string", "description": "Category of the service" },
+        "description": { "type": "string", "description": "Detailed description" }
+      },
+      "required": ["name", "price", "imageUrl"]
+    },
+    "Application": {
+      "title": "Application",
+      "description": "A service application submitted by a user",
+      "type": "object",
+      "properties": {
+        "serviceName": { "type": "string", "description": "Name of the service applied for" },
+        "userName": { "type": "string", "description": "Name of the user" },
+        "userPhone": { "type": "string", "description": "Phone number of the user" },
+        "documentUrl": { "type": "string", "description": "URL of the uploaded document" },
+        "status": { "type": "string", "enum": ["pending", "processing", "completed"], "description": "Status of the application" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Submission time" }
+      },
+      "required": ["serviceName", "userName", "userPhone", "documentUrl", "status", "createdAt"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Admin user details",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email", "description": "Admin email" },
+        "role": { "type": "string", "enum": ["admin"], "description": "User role" }
+      },
+      "required": ["email", "role"]
+    }
+  },
+  "firestore": {
+    "/services/{serviceId}": {
+      "schema": "Service",
+      "description": "Collection of services offered"
+    },
+    "/applications/{applicationId}": {
+      "schema": "Application",
+      "description": "Collection of user applications"
+    },
+    "/admins/{adminId}": {
+      "schema": "Admin",
+      "description": "Collection of admin users"
+    }
+  }
+}
